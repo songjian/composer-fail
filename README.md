@@ -1,4 +1,4 @@
-# Composer
+# Composer踩坑记录
 
 ## 笔记
 
@@ -29,6 +29,13 @@
   * Composer 将注册一个 PSR-4 autoloader 到 Acme 命名空间
   * 此时 src 会在你项目的根目录，与 vendor 文件夹同级。例如 src/Foo.php 文件应该包含 Acme\Foo 类
   * 添加 autoload 字段后，你应该再次运行 install 命令来生成 vendor/autoload.php 文件
+  * 引用这个文件也将返回 autoloader 的实例，你可以将包含调用的返回值存储在变量中，并添加更多的命名空间。这对于在一个测试套件中自动加载类文件是非常有用的，例如
+  ```php
+  $loader = require 'vendor/autoload.php';
+  $loader->add('Acme\\Test\\', __DIR__);
+  ```
+  * 除了 PSR-4 自动加载，classmap 也是支持的。这允许类被自动加载，即使不符合 PSR-0 规范
+  * Composer 提供了自己的 autoloader。如果你不想使用它，你可以仅仅引入`vendor/composer/autoload_*.php`文件，它返回一个关联数组，你可以通过这个关联数组配置自己的`autoloader`
 * 包版本
   * 版本约束可以用几个不同的方法来指定
     * 确切版本号 `1.0.2`
@@ -45,14 +52,23 @@
 * 依赖的库更新了版本，需要用`update`命令更新依赖
 * 只更新一个依赖`php composer.phar update monolog/monolog`
 * packagist是Composer的资源库
+* 只要你有一个 composer.json 文件在目录中，那么整个目录就是一个包
+* 项目和库之间唯一的区别是，项目是一个没有名字的包
+* 为了使它成为一个可安装的包，你需要给它一个名称。你可以通过 composer.json 中的 name 来定义
+```json
+{
+    "name": "acme/hello-world",
+    "require": {
+        "monolog/monolog": "1.0.*"
+    }
+}
+  * 在这种情况下项目的名称为 acme/hello-world，其中 acme 是供应商的名称。供应商的名称是必须填写的
+```
+* `composer show --platform` 命令来获取可用的平台软件包的列表
 
-## Composer使用
+## 问题记录
 
+Composer是PHP语言用来解决包依赖问题的包管理工具，众所周知的原因[https://packagist.org/](https://packagist.org/)在国内是打不开的，但是国内能找到镜像源，使用起来还是遇到一些问题，下面我对遇到的问题进行记录。
 
-
-## Composer踩坑记录
-
-Composer是PHP语言用来解决包依赖问题的包管理工具，众所周知的原因https://packagist.org/在国内是打不开的，但是国内能找到镜像源，使用起来还是遇到一些问题，下面我对遇到的问题进行记录。
-
-## 坑
+### 坑
 * 设置了镜像`composer config -g repos.packagist composer https://mirrors.aliyun.com/composer/`，使用`composer search phpunit`时还是使用
